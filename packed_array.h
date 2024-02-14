@@ -197,7 +197,7 @@ private:
     std::size_t size_ = 0;
 
     // Mask 参与的表达式都会自动转为ull，并在最后转为T时截断高位不需要的内容
-    unsigned long long mask_ = (1 << element_size_) - 1;
+    std::uint64_t mask_ = (1 << element_size_) - 1;
 
     std::vector<T> data_{};
 };
