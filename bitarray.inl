@@ -4,7 +4,7 @@
 #include <tuple>
 #include <format>
 
-auto calcIndexInfo(const std::size_t index, const std::size_t element_size, const std::size_t unit_size)
+static auto calcIndexInfo(const std::size_t index, const std::size_t element_size, const std::size_t unit_size)
 {
     return std::tuple{(index * element_size) / unit_size, (index * element_size) % unit_size};
 }
