@@ -35,12 +35,12 @@ public:
         using iterator_category = std::random_access_iterator_tag;
         using difference_type = std::ptrdiff_t;
         using value_type = T;
-        using reference = const T &;
+        using reference = T;
 
         iterator(BitArray<ElementSize, ArraySize, T> *array, std::size_t index)
             : array_(array), index_(index) {}
 
-        T operator*() const { return (*array_)[index_]; }
+        reference operator*() const { return (*array_)[index_]; }
 
         iterator &operator++()
         {
