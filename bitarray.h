@@ -8,8 +8,6 @@ template <std::size_t ElementSize, std::size_t ArraySize, typename T = std::uint
 class BitArray
 {
 public:
-    static inline const std::size_t kArraySize = ArraySize;
-
     class Access
     {
         BitArray<ElementSize, ArraySize, T> &data_;
@@ -157,23 +155,24 @@ public:
     typedef Access reference;
 
 public:
-    std::size_t size() { return kArraySize; }
-    bool empty() { return false; }
+    std::size_t size() const { return kArraySize; }
+    bool empty() const { return false; }
 
-    T get(std::size_t index);
+    T get(std::size_t index) const;
     void set(std::size_t index, const T value);
 
     Access operator[](std::size_t index) { return Access(*this, index); }
     T operator[](std::size_t index) const { return get(index); }
 
-    typename BitArray<ElementSize, ArraySize, T>::iterator begin() { return iterator(this, 0); }
-    typename BitArray<ElementSize, ArraySize, T>::iterator end() { return iterator(this, kArraySize); }
-    typename BitArray<ElementSize, ArraySize, T>::const_iterator cbegin() const { return const_iterator(this, 0); }
-    typename BitArray<ElementSize, ArraySize, T>::const_iterator cend() const { return const_iterator(this, kArraySize); }
+    iterator begin() { return iterator(this, 0); }
+    iterator end() { return iterator(this, kArraySize); }
+    const_iterator cbegin() const { return const_iterator(this, 0); }
+    const_iterator cend() const { return const_iterator(this, kArraySize); }
 
 private:
     // 当UnitSize为32时，该bitarray最多支持64位的ElementSize
     // 若UnitSize为16，则最多支持32位ElementSize，以此类推
+    static inline const std::size_t kArraySize = ArraySize;
     static inline const std::size_t kElementSize = ElementSize;
     static inline const std::size_t kUnitSize = sizeof(T);
     static inline const std::size_t kInnerArraySize = (kElementSize * kArraySize + kUnitSize - 1) / kUnitSize;

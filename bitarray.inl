@@ -11,7 +11,7 @@ static auto calcIndexInfo(const std::size_t index, const std::size_t element_siz
 
 template <std::size_t ElementSize, std::size_t ArraySize, typename T>
     requires std::is_unsigned_v<T>
-inline T BitArray<ElementSize, ArraySize, T>::get(std::size_t index)
+inline T BitArray<ElementSize, ArraySize, T>::get(std::size_t index) const
 {
     if (index >= kArraySize)
         throw std::out_of_range(std::format("BitArray: index {} out of range!", index));
