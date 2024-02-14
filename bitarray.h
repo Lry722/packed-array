@@ -1,21 +1,20 @@
 #pragma once
-#include <array>
+#include <vector>
 #include <cstdint>
 #include <concepts>
+#include <climits>
 
 /// @brief A BitArray class template that efficiently stores and manipulates arrays of fixed-size elements, each composed of a specified number of bits.
 /// @tparam T The underlying unsigned integer type used to store the bit-packed elements. By default, it is `std::uint32_t`.
-/// @tparam ElementSize The number of bits allocated for each element in the BitArray.
-/// @tparam ArraySize The total number of elements in the BitArray.
-template <std::size_t ElementSize, std::size_t ArraySize, typename T = std::uint32_t>
+template <typename T = std::uint32_t>
     requires std::is_unsigned_v<T>
 class BitArray
 {
 public:
     class Access
     {
-        BitArray<ElementSize, ArraySize, T> &data_;
-        std::size_t index_;
+        BitArray<T> &data_;
+        const std::size_t index_;
 
     public:
         Access(BitArray &data, std::size_t index) : data_(data), index_(index) {}
@@ -37,9 +36,9 @@ public:
         using iterator_category = std::random_access_iterator_tag;
         using difference_type = std::ptrdiff_t;
         using value_type = T;
-        using reference = T;
+        using reference = Access;
 
-        iterator(BitArray<ElementSize, ArraySize, T> *array, std::size_t index)
+        iterator(BitArray<T> *array, const std::size_t index)
             : array_(array), index_(index) {}
 
         reference operator*() const { return (*array_)[index_]; }
@@ -89,7 +88,7 @@ public:
         bool operator<(const iterator &other) const { return index_ < other.index_; }
 
     private:
-        BitArray<ElementSize, ArraySize, T> *array_;
+        BitArray<T> *array_;
         std::size_t index_;
     };
 
@@ -99,9 +98,9 @@ public:
         using iterator_category = std::random_access_iterator_tag;
         using difference_type = std::ptrdiff_t;
         using value_type = T;
-        using reference = Access;
+        using reference = T;
 
-        const_iterator(const BitArray<ElementSize, ArraySize, T> *array, std::size_t index)
+        const_iterator(const BitArray<T> *array, const std::size_t index)
             : array_(array), index_(index) {}
 
         reference operator*() const { return (*array_)[index_]; }
@@ -151,7 +150,7 @@ public:
         bool operator<(const const_iterator &other) const { return index_ < other.index_; }
 
     private:
-        const BitArray<ElementSize, ArraySize, T> *array_;
+        const BitArray<T> *array_;
         std::size_t index_;
     };
 
@@ -159,31 +158,48 @@ public:
     typedef Access reference;
 
 public:
-    std::size_t size() const { return kArraySize; }
-    bool empty() const { return false; }
+    BitArray() = default;
+    BitArray(const std::size_t size, const std::size_t element_size = 4) noexcept : size_(size), element_size_(element_size), mask_((1ULL << element_size_) - 1), data_((size * element_size_ + kUnitSize - 1) / kUnitSize) {}
 
-    T get(std::size_t index) const;
-    void set(std::size_t index, const T value);
+    std::size_t size() const { return size_; }
+    bool empty() const { return size_ == 0; }
+    std::size_t memory() const { return data_.size() * kUnitSize; }
 
-    Access operator[](std::size_t index) { return Access(*this, index); }
-    T operator[](std::size_t index) const { return get(index); }
+    void resize(const std::size_t size)
+    {
+        size_ = size;
+        data_.resize((size_ * element_size_ + kUnitSize - 1) / kUnitSize);
+    }
+    void push_back(const T value)
+    {
+        resize(size_ + 1);
+        set(size_ - 1, value);
+    }
+
+    T get(const std::size_t index) const;
+    void set(const std::size_t index, const T value);
+    void transform(const std::size_t element_size);
+    void fit();
+
+    Access operator[](const std::size_t index) { return Access(*this, index); }
+    T operator[](const std::size_t index) const { return get(index); }
 
     iterator begin() { return iterator(this, 0); }
-    iterator end() { return iterator(this, kArraySize); }
+    iterator end() { return iterator(this, size_); }
     const_iterator cbegin() const { return const_iterator(this, 0); }
-    const_iterator cend() const { return const_iterator(this, kArraySize); }
+    const_iterator cend() const { return const_iterator(this, size_); }
 
 private:
     // 当UnitSize为32时，该bitarray最多支持64位的ElementSize
     // 若UnitSize为16，则最多支持32位ElementSize，以此类推
-    static inline const std::size_t kArraySize = ArraySize;
-    static inline const std::size_t kElementSize = ElementSize;
-    static inline const std::size_t kUnitSize = sizeof(T);
-    static inline const std::size_t kInnerArraySize = (kElementSize * kArraySize + kUnitSize - 1) / kUnitSize;
-    // kMask 参与的表达式都会自动转为ull，并在最后转为T时截断高位不需要的内容
-    static inline const unsigned long long kMask = (1 << kElementSize) - 1;
+    static inline const std::size_t kUnitSize = sizeof(T) * CHAR_BIT;
+    std::size_t element_size_ = 4;
+    std::size_t size_ = 0;
 
-    std::array<T, kInnerArraySize> data{};
+    // Mask 参与的表达式都会自动转为ull，并在最后转为T时截断高位不需要的内容
+    unsigned long long mask_ = (1 << element_size_) - 1;
+
+    std::vector<T> data_{};
 };
 
 #include "bitarray.inl"

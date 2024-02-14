@@ -12,4 +12,4 @@
 
 只需要将 bitarray.h 和 bitarray.inl 文件复制到你的项目中，并进行 include 即可。
 
-模板参数的含义详见 [bitarray.h](bitarray.h) 中的注释。
+各个方法的使用方法详见 [bitarray.h](bitarray.h) 中的注释。

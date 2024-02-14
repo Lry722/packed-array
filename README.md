@@ -12,4 +12,4 @@ This is an efficient C++ implementation of a BitArray designed to store custom-s
 
 To use this library, simply clone the `bitarray.h` and `bitarray.inl` into your project and include them.
 
-The meaning of template parameters is explained in the comments in [bitarray.h](bitarray.h) .
+The usage of each method are detailed in the comments in [bitarray.h](bitarray.h) .
