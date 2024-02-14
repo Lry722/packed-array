@@ -3,6 +3,10 @@
 #include <cstdint>
 #include <concepts>
 
+/// @brief A BitArray class template that efficiently stores and manipulates arrays of fixed-size elements, each composed of a specified number of bits.
+/// @tparam T The underlying unsigned integer type used to store the bit-packed elements. By default, it is `std::uint32_t`.
+/// @tparam ElementSize The number of bits allocated for each element in the BitArray.
+/// @tparam ArraySize The total number of elements in the BitArray.
 template <std::size_t ElementSize, std::size_t ArraySize, typename T = std::uint32_t>
     requires std::is_unsigned_v<T>
 class BitArray
