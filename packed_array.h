@@ -4,20 +4,20 @@
 #include <concepts>
 #include <climits>
 
-/// @brief A BitArray class template that efficiently stores and manipulates arrays of fixed-size elements, each composed of a specified number of bits.
+/// @brief A PackedArray class template that efficiently stores and manipulates arrays of fixed-size elements, each composed of a specified number of bits.
 /// @tparam T The underlying unsigned integer type used to store the bit-packed elements. By default, it is `std::uint32_t`.
 template <typename T = std::uint32_t>
     requires std::is_unsigned_v<T>
-class BitArray
+class PackedArray
 {
 public:
     class Access
     {
-        BitArray<T> &data_;
+        PackedArray<T> &data_;
         const std::size_t index_;
 
     public:
-        Access(BitArray &data, std::size_t index) : data_(data), index_(index) {}
+        Access(PackedArray &data, std::size_t index) : data_(data), index_(index) {}
         Access &operator=(const T value)
         {
             data_.set(index_, value);
@@ -38,7 +38,7 @@ public:
         using value_type = T;
         using reference = Access;
 
-        iterator(BitArray<T> *array, const std::size_t index)
+        iterator(PackedArray<T> *array, const std::size_t index)
             : array_(array), index_(index) {}
 
         reference operator*() const { return (*array_)[index_]; }
@@ -88,7 +88,7 @@ public:
         bool operator<(const iterator &other) const { return index_ < other.index_; }
 
     private:
-        BitArray<T> *array_;
+        PackedArray<T> *array_;
         std::size_t index_;
     };
 
@@ -100,7 +100,7 @@ public:
         using value_type = T;
         using reference = T;
 
-        const_iterator(const BitArray<T> *array, const std::size_t index)
+        const_iterator(const PackedArray<T> *array, const std::size_t index)
             : array_(array), index_(index) {}
 
         reference operator*() const { return (*array_)[index_]; }
@@ -150,7 +150,7 @@ public:
         bool operator<(const const_iterator &other) const { return index_ < other.index_; }
 
     private:
-        const BitArray<T> *array_;
+        const PackedArray<T> *array_;
         std::size_t index_;
     };
 
@@ -158,8 +158,8 @@ public:
     typedef Access reference;
 
 public:
-    BitArray() = default;
-    BitArray(const std::size_t size, const std::size_t element_size = 4) noexcept : size_(size), element_size_(element_size), mask_((1ULL << element_size_) - 1), data_((size * element_size_ + kUnitSize - 1) / kUnitSize) {}
+    PackedArray() = default;
+    PackedArray(const std::size_t size, const std::size_t element_size = 4) noexcept : size_(size), element_size_(element_size), mask_((1ULL << element_size_) - 1), data_((size * element_size_ + kUnitSize - 1) / kUnitSize) {}
 
     std::size_t size() const { return size_; }
     bool empty() const { return size_ == 0; }
@@ -202,4 +202,4 @@ private:
     std::vector<T> data_{};
 };
 
-#include "bitarray.inl"
+#include "packed_array.inl"

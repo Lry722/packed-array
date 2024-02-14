@@ -1,5 +1,5 @@
 #pragma once
-#include "bitarray.h"
+#include "packed_array.h"
 #include <stdexcept>
 #include <tuple>
 #include <format>
@@ -25,10 +25,10 @@ std::size_t minimumBitsRequired(auto n) {
 
 template <typename T>
     requires std::is_unsigned_v<T>
-inline T BitArray<T>::get(const std::size_t index) const
+inline T PackedArray<T>::get(const std::size_t index) const
 {
     if (index >= size_)
-        throw std::out_of_range(std::format("BitArray: index {} out of range!", index));
+        throw std::out_of_range(std::format("PackedArray: index {} out of range!", index));
 
     const auto [index_in_data, index_in_unit] = calcIndexInfo(index, element_size_, kUnitSize);
 
@@ -43,10 +43,10 @@ inline T BitArray<T>::get(const std::size_t index) const
 
 template <typename T>
     requires std::is_unsigned_v<T>
-inline void BitArray<T>::set(const std::size_t index, const T value)
+inline void PackedArray<T>::set(const std::size_t index, const T value)
 {
     if (index >= size_)
-        throw std::out_of_range(std::format("BitArray: index {} out of range!", index));
+        throw std::out_of_range(std::format("PackedArray: index {} out of range!", index));
 
     const auto [index_in_data, index_in_unit] = calcIndexInfo(index, element_size_, kUnitSize);
 
@@ -59,12 +59,12 @@ inline void BitArray<T>::set(const std::size_t index, const T value)
 
 template <typename T>
     requires std::is_unsigned_v<T>
-inline void BitArray<T>::transform(const std::size_t element_size)
+inline void PackedArray<T>::transform(const std::size_t element_size)
 {
     if (element_size == element_size_)
         return;
 
-    BitArray<T> tmp(size_, element_size);
+    PackedArray<T> tmp(size_, element_size);
     for (int i = 0; i < size_; ++i)
         tmp.set(i, get(i));
 
@@ -73,7 +73,7 @@ inline void BitArray<T>::transform(const std::size_t element_size)
 
 template <typename T>
     requires std::is_unsigned_v<T>
-inline void BitArray<T>::fit()
+inline void PackedArray<T>::fit()
 {
     const T maximum = *std::max_element(cbegin(), cend());
     transform(minimumBitsRequired(maximum));
