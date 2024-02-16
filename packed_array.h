@@ -11,148 +11,11 @@ template <typename T = std::uint32_t>
 class PackedArray
 {
 public:
-    class Access
-    {
-        PackedArray<T> &data_;
-        const std::size_t index_;
-
-    public:
-        Access(PackedArray &data, std::size_t index) : data_(data), index_(index) {}
-        Access &operator=(const T value)
-        {
-            data_.set(index_, value);
-            return *this;
-        }
-        operator T() const
-        {
-            return data_.get(index_);
-        }
-    };
+    class Access;
     friend class Access;
 
-    class iterator
-    {
-    public:
-        using iterator_category = std::random_access_iterator_tag;
-        using difference_type = std::ptrdiff_t;
-        using value_type = T;
-        using reference = Access;
-
-        iterator(PackedArray<T> *array, const std::size_t index)
-            : array_(array), index_(index) {}
-
-        reference operator*() const { return (*array_)[index_]; }
-
-        iterator &operator++()
-        {
-            ++index_;
-            return *this;
-        }
-        iterator operator++(int)
-        {
-            iterator tmp(*this);
-            operator++();
-            return tmp;
-        }
-
-        iterator &operator--()
-        {
-            --index_;
-            return *this;
-        }
-        iterator operator--(int)
-        {
-            iterator tmp(*this);
-            operator--();
-            return tmp;
-        }
-
-        iterator &operator+=(difference_type n)
-        {
-            index_ += n;
-            return *this;
-        }
-        iterator &operator-=(difference_type n)
-        {
-            index_ -= n;
-            return *this;
-        }
-
-        friend iterator operator+(iterator it, difference_type n) { return it += n; }
-        friend iterator operator+(difference_type n, iterator it) { return it += n; }
-        friend iterator operator-(iterator it, difference_type n) { return it -= n; }
-
-        friend difference_type operator-(iterator lhs, iterator rhs) { return lhs.index_ - rhs.index_; }
-
-        bool operator==(const iterator &other) const { return array_ == other.array_ && index_ == other.index_; }
-        bool operator<(const iterator &other) const { return index_ < other.index_; }
-
-    private:
-        PackedArray<T> *array_;
-        std::size_t index_;
-    };
-
-    class const_iterator
-    {
-    public:
-        using iterator_category = std::random_access_iterator_tag;
-        using difference_type = std::ptrdiff_t;
-        using value_type = T;
-        using reference = T;
-
-        const_iterator(const PackedArray<T> *array, const std::size_t index)
-            : array_(array), index_(index) {}
-
-        reference operator*() const { return (*array_)[index_]; }
-
-        const_iterator &operator++()
-        {
-            ++index_;
-            return *this;
-        }
-        const_iterator operator++(int)
-        {
-            const_iterator tmp(*this);
-            operator++();
-            return tmp;
-        }
-
-        const_iterator &operator--()
-        {
-            --index_;
-            return *this;
-        }
-        const_iterator operator--(int)
-        {
-            const_iterator tmp(*this);
-            operator--();
-            return tmp;
-        }
-
-        const_iterator &operator+=(difference_type n)
-        {
-            index_ += n;
-            return *this;
-        }
-        const_iterator &operator-=(difference_type n)
-        {
-            index_ -= n;
-            return *this;
-        }
-
-        friend const_iterator operator+(const_iterator it, difference_type n) { return it += n; }
-        friend const_iterator operator+(difference_type n, const_iterator it) { return it += n; }
-        friend const_iterator operator-(const_iterator it, difference_type n) { return it -= n; }
-
-        friend difference_type operator-(const_iterator lhs, const_iterator rhs) { return lhs.index_ - rhs.index_; }
-
-        bool operator==(const const_iterator &other) const { return array_ == other.array_ && index_ == other.index_; }
-        bool operator<(const const_iterator &other) const { return index_ < other.index_; }
-
-    private:
-        const PackedArray<T> *array_;
-        std::size_t index_;
-    };
+    class iterator;
+    class const_iterator;
 
     typedef T value_type;
     typedef Access reference;
@@ -163,22 +26,15 @@ public:
 
     std::size_t size() const { return size_; }
     bool empty() const { return size_ == 0; }
-    std::size_t memory() const { return data_.size() * kUnitSize; }
 
-    void resize(const std::size_t size)
-    {
-        size_ = size;
-        data_.resize((size_ * element_size_ + kUnitSize - 1) / kUnitSize);
-    }
-    void push_back(const T value)
-    {
-        resize(size_ + 1);
-        set(size_ - 1, value);
-    }
+    void resize(const std::size_t size);
+    void push_back(const T value);
 
     T get(const std::size_t index) const;
     void set(const std::size_t index, const T value);
+    
     void transform(const std::size_t element_size);
+    void grow();
     void fit();
 
     Access operator[](const std::size_t index) { return Access(*this, index); }
